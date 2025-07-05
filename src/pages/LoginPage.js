@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import authService from "../services/authService";
 
@@ -8,12 +9,14 @@ const LoginPage = () => {
   const [error, setError] = useState('');
 
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const response = await authService.login({ username, password });
       login(response);
+      navigate('/dashboard')
       setError('');
     } catch (err) {
       setError('Wrong credentials. Retry');
@@ -36,7 +39,7 @@ const LoginPage = () => {
         <div>
           <label>Password:</label>
           <input
-          type="text"
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required /> 
