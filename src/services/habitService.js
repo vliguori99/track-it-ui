@@ -1,52 +1,58 @@
 const API_URL = "http://localhost:8080/api/v1/habits";
 
 /**
+ * Generic Function to handle fetch response.
+ * Checks if the response is ok, otherwise read and throw the error in the JSON
+ * @param {Response} response - the object returned by the fetch operation
+ * @returns {Promise<any>} - JSON data if response is ok
+ * @throws {object} - the error item if the JSON is not ok
+ */
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw errorData;
+  }
+  return response.json();
+};
+
+/**
  * Function to retrieve the current user habits
  * @param {string} token - The JWT token of the user
  * @returns {Promise<Array>} - the habits array
  */
-const getHabits = (token) => {
-  return fetch(API_URL, {
+const getHabits = async (token) => {
+  const response = await fetch(API_URL, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       // this is the core for the protected apis
       Authorization: `Bearer ${token}`,
     },
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error("Could not fetch habits");
-    }
-    return response.json();
   });
+  return handleResponse(response);
 };
 
-
-/**
- * Funtion to create a new Habit
- * @param {object} habitDto - the dto of the item to create
- * @param {string} token - JWT token of the user
- * @returns {Promise<object>} - the habit created
- */
-const createHabit = (habitDto, token) => {
-  return fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(habitDto)
-  }).then(response => { 
-    if (!response.ok) {
-      throw new Error('Could not create habit');
-    }
-    return response.json();
-  });
-};
+  /**
+   * Funtion to create a new Habit
+   * @param {object} habitDto - the dto of the item to create
+   * @param {string} token - JWT token of the user
+   * @returns {Promise<object>} - the habit created
+   */
+  const createHabit = async (habitDto, token) => {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(habitDto),
+    });
+    return handleResponse(response);
+  };
 
 const habitService = {
   getHabits,
-  createHabit
-}
+  createHabit,
+};
 
 export default habitService;

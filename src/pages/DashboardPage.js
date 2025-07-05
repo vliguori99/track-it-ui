@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const DashboardPage = () => {
   const { authData } = useAuth(); // retrieve authentication data from the context
   const [habits, setHabits] = useState([]);
-  const [error, setError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
 
   const [newHabitName, setNewHabitName] = useState("");
   const [newHabitDescription, setNewHabitDescription] = useState("");
@@ -20,7 +20,6 @@ const DashboardPage = () => {
         } else {
         }
       } catch (error) {
-        setError("Could not retrieve habits");
         console.error(error);
       }
     };
@@ -30,8 +29,11 @@ const DashboardPage = () => {
 
   const handleCreateHabit = async (e) => {
     e.preventDefault();
+
+    setFormErrors({}) // always reset previous errors
+
     try {
-      const habitDto = { name: newHabitName, desription: newHabitDescription };
+      const habitDto = { name: newHabitName, description: newHabitDescription };
       const newHabit = await habitService.createHabit(
         habitDto,
         authData.accessToken
@@ -43,7 +45,8 @@ const DashboardPage = () => {
       setNewHabitName("");
       setNewHabitDescription("");
     } catch (err) {
-      setError("Error during habit creation.");
+      console.error("Validation error:", err);
+      setFormErrors(err)
     }
   };
 
@@ -61,6 +64,8 @@ const DashboardPage = () => {
               onChange={(e) => setNewHabitName(e.target.value)}
               required
             />
+            {/* Show the error if it exists for the current field */}
+            {formErrors.name && <span style={{ color: 'red'}}>{formErrors.name}</span>}
           </div>
           <div>
             <label>Description:</label>
@@ -69,6 +74,7 @@ const DashboardPage = () => {
               value={newHabitDescription}
               onChange={(e) => setNewHabitDescription(e.target.value)}
             />
+            {formErrors.description && <span style={{ color: 'red'}}>{formErrors.description}</span>}
           </div>
           <button type="submit">Add</button>
         </form>
@@ -77,7 +83,6 @@ const DashboardPage = () => {
       <hr style={{ margin: "40px 0" }} />
 
       <h2>Your Habits</h2>
-      {error && <p style={{ color: "red" }}></p>}
       <ul>
         {habits.length > 0 ? (
           habits.map((habit) => <li key={habit.id}>{habit.name}</li>)
