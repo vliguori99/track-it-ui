@@ -50,9 +50,29 @@ const getHabits = async (token) => {
     return handleResponse(response);
   };
 
+  /**
+   * Function to modify a habit
+   * @param {object} habitDto - the dto of the updated data
+   * @param {number} id - the habit id 
+   * @param {string} token - jwt token
+   * @returns {Promise<object>} - the updated habit
+   */
+  const updateHabit = async (habitDto, id, token) => {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(habitDto)
+    });
+    return handleResponse(response);
+  }
+
 const habitService = {
   getHabits,
   createHabit,
+  updateHabit
 };
 
 export default habitService;

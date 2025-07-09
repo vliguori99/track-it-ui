@@ -10,6 +10,10 @@ const DashboardPage = () => {
   const [newHabitName, setNewHabitName] = useState("");
   const [newHabitDescription, setNewHabitDescription] = useState("");
 
+  const [editedHabitId, setEditedHabitId] = useState(null); // ID of the habit being modified
+  const [editedHabitName, setEditedHabitName] = useState("");
+  const [editedHabitDescription, setEditedHabitDescription] = useState("");
+
   // react method that gets executed after the component is built
   useEffect(() => {
     const fetchHabits = async () => {
@@ -30,7 +34,7 @@ const DashboardPage = () => {
   const handleCreateHabit = async (e) => {
     e.preventDefault();
 
-    setFormErrors({}) // always reset previous errors
+    setFormErrors({}); // always reset previous errors
 
     try {
       const habitDto = { name: newHabitName, description: newHabitDescription };
@@ -46,7 +50,39 @@ const DashboardPage = () => {
       setNewHabitDescription("");
     } catch (err) {
       console.error("Validation error:", err);
-      setFormErrors(err)
+      setFormErrors(err);
+    }
+  };
+
+  const handleEditClick = (habit) => {
+    setEditedHabitId(habit.id);
+    setEditedHabitName(habit.name); // this precompiles the input with the current value
+    setEditedHabitDescription(habit.description); // this precompiles the input with the current value
+  };
+
+  const handleUpdateHabit = async (e, habitId) => {
+    e.preventDefault();
+    setFormErrors({});
+
+    try {
+      const habitDto = {
+        name: editedHabitName,
+        description: editedHabitDescription,
+      };
+      const updatedHabit = await habitService.updateHabit(
+        habitDto,
+        habitId,
+        authData.accessToken
+      );
+
+      setHabits(habits.map((h) => (h.id === editedHabitId ? updatedHabit : h)));
+
+      setEditedHabitId(null);
+      setEditedHabitName("");
+      setEditedHabitDescription("");
+    } catch (err) {
+      console.error("Validation error:", err);
+      setFormErrors(err);
     }
   };
 
@@ -65,7 +101,9 @@ const DashboardPage = () => {
               required
             />
             {/* Show the error if it exists for the current field */}
-            {formErrors.name && <span style={{ color: 'red'}}>{formErrors.name}</span>}
+            {formErrors.name && (
+              <span style={{ color: "red" }}>{formErrors.name}</span>
+            )}
           </div>
           <div>
             <label>Description:</label>
@@ -74,7 +112,9 @@ const DashboardPage = () => {
               value={newHabitDescription}
               onChange={(e) => setNewHabitDescription(e.target.value)}
             />
-            {formErrors.description && <span style={{ color: 'red'}}>{formErrors.description}</span>}
+            {formErrors.description && (
+              <span style={{ color: "red" }}>{formErrors.description}</span>
+            )}
           </div>
           <button type="submit">Add</button>
         </form>
@@ -84,11 +124,41 @@ const DashboardPage = () => {
 
       <h2>Your Habits</h2>
       <ul>
-        {habits.length > 0 ? (
-          habits.map((habit) => <li key={habit.id}>{habit.name}</li>)
-        ) : (
-          <p> No Habits found. Create your first!</p>
-        )}
+        {habits.map((habit) => (
+          <li key={habit.id}>
+            {editedHabitId === habit.id ? (
+              // if we are in edit mode, show input field and save button
+              <form onSubmit={(e) => handleUpdateHabit(e, habit.id)}>
+                <input
+                  type="text"
+                  value={editedHabitName}
+                  onChange={(e) => setEditedHabitName(e.target.value)}
+                />
+                <input
+                  type="text"
+                  value={editedHabitDescription}
+                  onChange={(e) => setEditedHabitDescription(e.target.value)}
+                />
+
+                <button type="submit">save</button>
+                <button type="button" onClick={() => setEditedHabitId(null)}>
+                  Cancel
+                </button>
+              </form>
+            ) : (
+              // otherwise, show name and modify button
+              <>
+                {habit.name} - {habit.description}
+                <button
+                  onClick={() => handleEditClick(habit)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Edit
+                </button>
+              </>
+            )}
+          </li>
+        ))}
       </ul>
     </div>
   );
