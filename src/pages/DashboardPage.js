@@ -31,7 +31,7 @@ const styles = {
   deleteButton: {
     backgroundColor: '#dc3545',
     color: 'white',
-    borderColor: 'dc3545'
+    borderColor: '#dc3545'
   }
 };
 
@@ -46,6 +46,8 @@ const DashboardPage = () => {
   const [editedHabitId, setEditedHabitId] = useState(null); // ID of the habit being modified
   const [editedHabitName, setEditedHabitName] = useState("");
   const [editedHabitDescription, setEditedHabitDescription] = useState("");
+
+  const [isCreateFormVisible, setIsCreateFormVisible] = useState(false);
 
   // react method that gets executed after the component is built
   useEffect(() => {
@@ -119,6 +121,20 @@ const DashboardPage = () => {
       setFormErrors(err);
     }
   };
+
+  const handleDeleteHabit = async (habitId) => {
+    if(!window.confirm(`Are you sure you want to delete this habit? 
+      You will lose track of progress forever!`)) {
+        return;
+    }
+
+    try {
+      await habitService.deleteHabit(habitId, authData.accessToken);
+      setHabits(prevHabits => prevHabits.filter(habit => habit.id !== habitId));
+    } catch (err) {
+      console.error("Error deleting habit:", err)
+    }
+  }
 
   return (
     <div>
@@ -199,6 +215,11 @@ const DashboardPage = () => {
                   style={{...styles.button, ...styles.editButton}}
                 >
                   Edit
+                </button>
+                <button onClick={() => handleDeleteHabit(habit.id)}
+                  style={{...styles.button, ...styles.deleteButton}}
+                >
+                  Delete
                 </button>
               </>
             )}

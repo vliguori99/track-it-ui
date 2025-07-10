@@ -69,10 +69,33 @@ const getHabits = async (token) => {
     return handleResponse(response);
   }
 
+  /**
+   * Function to delete habit
+   * @param {number} id = the id of the habit to delete
+   * @param {string} token = JWT user token
+   * @returns {Promise<Response>} = the fetch API (will not have body)
+   */
+  const deleteHabit = async (id, token) => {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Unkwown error.'}));
+      throw errorData;
+    }
+
+    return;
+  }
+
+
 const habitService = {
   getHabits,
   createHabit,
-  updateHabit
+  updateHabit,
+  deleteHabit
 };
 
 export default habitService;
